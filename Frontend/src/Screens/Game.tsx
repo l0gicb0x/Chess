@@ -2,6 +2,7 @@ import { ChessBoard } from "../components/ChessBoard"
 import { Button } from "../components/Button"
 import { useSocket } from "../hooks/useSocket";
 import { useEffect, useState } from "react";
+import { Chess } from "chess.js";
 
 
 export const INIT_GAME = "INIT_GAME";
@@ -11,7 +12,8 @@ export const GAME_OVER = "GAME_OVER";
 
 export const Game = () => {
     const socket = useSocket();
-    const [board, setBoard] = useState();
+    const [chess, setChess] = useState(new Chess());
+    const [board, setBoard] = useState(chess.board());
 
     useEffect(() => {
         if(!socket) return;
@@ -21,10 +23,16 @@ export const Game = () => {
             console.log(message);
             switch(message.type) {
                 case INIT_GAME:
+
+                    setChess(new Chess());
+                    setBoard(chess.board());
                     console.log("Game initialized");
                     break;
                 case MOVE:
+                    const move = message.payload;
+                    chess.move(move);
                     console.log("Move made");
+                    setBoard(chess.board());
                     break;
                 case GAME_OVER:
                     console.log("Game over");
@@ -40,7 +48,7 @@ export const Game = () => {
         <div className="pt-8 max-w-Screen-lg w-full">
             <div className="grid grid-cols-6 gap-4 w-full ">
                 <div className="col-span-4 bg-red-200 w-full">
-                    <ChessBoard/>
+                    <ChessBoard board={board} />
                 </div>
                 <div className="col-span-2 bg-green-200 w-full">
                     <Button 
